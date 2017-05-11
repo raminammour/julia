@@ -1066,7 +1066,6 @@ endif
 ifeq ($(BUILD_CUSTOM_LIBCXX),1)
 LDFLAGS += -L$(build_libdir)
 CXXLDFLAGS += -L$(build_libdir) -lc++abi -stdlib=libc++ -lc++
-CPPFLAGS += -I$(build_includedir)/c++/v1
 CUSTOM_LD_LIBRARY_PATH := LD_LIBRARY_PATH="$(build_libdir)"
 ifeq ($(USEICC),1)
 CXXFLAGS += -cxxlib-nostd -static-intel
