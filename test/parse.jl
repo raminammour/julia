@@ -1187,3 +1187,14 @@ module Test21607
         x
     end === 1.0
 end
+
+# Basic parsing for in place assign
+@test parse("a@b = 1") == :(a@b = 1)
+@test parse("a.b@c = 1") == :(a.b@c = 1)
+@test parse("a.b@c.d = 1") == :(a.b@c.d = 1)
+@test parse("a.b@c.d[e] = 1") == :(a.b@c.d[e] = 1)
+@test parse("a.b@c[d] = 1") == :(a.b@c[d] = 1)
+@test parse("a.b@c[d,e] = 1") == :(a.b@c[d,e] = 1)
+@test parse("a.b@[c] = 1") == :(a.b@[c] = 1)
+@test parse("a.b@[c,d] = 1") == :(a.b@[c,d] = 1)
+@test parse("a.b[c]@[d] = 1") == :(a.b[c]@[d] = 1)
