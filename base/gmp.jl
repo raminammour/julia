@@ -88,9 +88,7 @@ const bitcnt_t = Culong
 gmpz(op::Symbol) = (Symbol(:__gmpz_, op), :libgmp)
 
 init!(x::BigInt) = (ccall((:__gmpz_init, :libgmp), Void, (mpz_t,), &x); x)
-init() = init!(BigInt())
 init2!(x::BigInt, a) = (ccall((:__gmpz_init2, :libgmp), Void, (mpz_t, bitcnt_t), &x, a); x)
-init2(a) = init2!(BigInt(), a)
 
 sizeinbase(a::BigInt, b) = Int(ccall((:__gmpz_sizeinbase, :libgmp), Csize_t, (mpz_t, Cint), &a, b))
 
