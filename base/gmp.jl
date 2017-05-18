@@ -104,12 +104,14 @@ end
 invert!(x::BigInt, a::BigInt, b::BigInt) =
     ccall((:__gmpz_invert, :libgmp), Cint, (mpz_t, mpz_t, mpz_t), &x, &a, &b)
 invert(a::BigInt, b::BigInt) = invert!(BigInt(), a, b)
+invert!(x::BigInt, b::BigInt) = invert!(x, x, b)
 
 for op in (:add_ui, :sub_ui, :mul_ui, :mul_2exp, :fdiv_q_2exp, :pow_ui, :bin_ui)
     op! = Symbol(op, :!)
     @eval begin
         $op!(x::BigInt, a::BigInt, b) = (ccall($(gmpz(op)), Void, (mpz_t, mpz_t, Culong), &x, &a, b); x)
         $op(a::BigInt, b) = $op!(BigInt(), a, b)
+        $op!(x::BigInt, b) = $op!(x, x, b)
     end
 end
 
@@ -122,6 +124,7 @@ end
 
 mul_si!(x::BigInt, a::BigInt, b) = (ccall((:__gmpz_mul_si, :libgmp), Void, (mpz_t, mpz_t, Clong), &x, &a, b); x)
 mul_si(a::BigInt, b) = mul_si!(BigInt(), a, b)
+mul_si!(x::BigInt, b) = mul_si!(x, x, b)
 
 for op in (:neg, :com, :sqrt, :set)
     op! = Symbol(op, :!)
@@ -129,6 +132,8 @@ for op in (:neg, :com, :sqrt, :set)
         $op!(x::BigInt, a::BigInt) = (ccall($(gmpz(op)), Void, (mpz_t, mpz_t), &x, &a); x)
         $op(a::BigInt) = $op!(BigInt(), a)
     end
+    op == :set && continue # MPZ.set!(x) would make no sense
+    @eval $op!(x::BigInt) = $op!(x, x)
 end
 
 for (op, T) in ((:fac_ui, Culong), (:set_ui, Culong), (:set_si, Clong), (:set_d, Cdouble))
@@ -153,6 +158,7 @@ tdiv_qr(a::BigInt, b::BigInt) = tdiv_qr!(BigInt(), BigInt(), a, b)
 powm!(x::BigInt, a::BigInt, b::BigInt, c::BigInt) =
     (ccall((:__gmpz_powm, :libgmp), Void, (mpz_t, mpz_t, mpz_t, mpz_t), &x, &a, &b, &c); x)
 powm(a::BigInt, b::BigInt, c::BigInt) = powm!(BigInt(), a, b, c)
+powm!(x::BigInt, b::BigInt, c::BigInt) = powm!(x, x, b, c)
 
 function gcdext!(x::BigInt, y::BigInt, z::BigInt, a::BigInt, b::BigInt)
     ccall((:__gmpz_gcdext, :libgmp), Void, (mpz_t, mpz_t, mpz_t, mpz_t, mpz_t),
