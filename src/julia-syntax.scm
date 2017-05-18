@@ -1439,6 +1439,11 @@
 ;; lower function call containing keyword arguments
 (define (lower-kw-call fexpr kw0 pa)
 
+  ;; check for keyword arguments syntactically passed more than once
+  (let ((dups (has-dups (map cadr (filter kwarg? kw0)))))
+    (if dups
+        (error (string "keyword argument \"" (car dups) "\" repeated in call to \"" (deparse fexpr) "\""))))
+
   (define (kwcall-unless-empty f pa kw-container-test kw-container)
     (let* ((expr_stmts (remove-argument-side-effects `(call ,f ,@pa)))
            (pa         (cddr (car expr_stmts)))
@@ -2960,7 +2965,7 @@ f(x) = yt(x)
                                (memq (car e) '(quote top core line inert local local-def unnecessary
                                                meta inbounds boundscheck simdloop decl
                                                implicit-global global globalref outerref
-                                               const = null method call ssavalue))))
+                                               const = null method call foreigncall ssavalue))))
                          (lam:body lam))))
                (unused (map cadr (filter (lambda (x) (memq (car x) '(method =)))
                                          leading))))

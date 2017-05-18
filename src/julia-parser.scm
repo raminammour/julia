@@ -876,9 +876,11 @@
            )
        (not (ts:space? s))
        (not (operator? t))
-       (not (initial-reserved-word? t))
        (not (closing-token? t))
        (not (newline? t))
+       (or (not (string? expr))  ;; issue #20575
+           (error "cannot juxtapose string literal"))
+       (not (initial-reserved-word? t))
        (not (and (pair? expr) (syntactic-unary-op? (car expr))))
        ;; TODO: this would disallow juxtaposition with 0, which is ambiguous
        ;; with e.g. hex literals `0x...`. however this is used for `0im`, which
@@ -1331,11 +1333,10 @@
                              (expect-end (take-lineendings s) "primitive type"))))))
        ;; deprecated type keywords
        ((type)
-        ;; TODO fully deprecate post-0.6
-        ;;(syntax-deprecation s "type" "mutable struct")
+        (syntax-deprecation s "type" "mutable struct")  ;; retain in 0.7
         (parse-struct-def s #t word))
        ((immutable)
-        ;;(syntax-deprecation s "immutable" "struct")
+        (syntax-deprecation s "immutable" "struct")  ;; retain in 0.7
         (parse-struct-def s #f word))
        ((bitstype)
         (let* ((nb   (with-space-sensitive (parse-cond s)))

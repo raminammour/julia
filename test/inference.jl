@@ -740,7 +740,7 @@ let e = code_typed(f21175, ())[1].first.code[1]::Expr
 end
 
 # issue #10207
-type T10207{A, B}
+mutable struct T10207{A, B}
     a::A
     b::B
 end
@@ -780,3 +780,14 @@ end
 
 # missing method should be inferred as Union{}, ref https://github.com/JuliaLang/julia/issues/20033#issuecomment-282228948
 @test Base.return_types(f -> f(1), (typeof((x::String) -> x),)) == Any[Union{}]
+
+# issue #21848
+@test Core.Inference.limit_type_depth(Ref{Complex{T} where T}, Core.Inference.MAX_TYPE_DEPTH) == Ref
+let T = Tuple{Tuple{Int64, Void},
+              Tuple{Tuple{Int64, Void},
+                    Tuple{Int64, Tuple{Tuple{Int64, Void},
+                                       Tuple{Tuple{Int64, Void}, Tuple{Int64, Tuple{Tuple{Int64, Void}, Tuple{Tuple, Tuple}}}}}}}}
+    @test Core.Inference.limit_type_depth(T, 0) >: T
+    @test Core.Inference.limit_type_depth(T, 1) >: T
+    @test Core.Inference.limit_type_depth(T, 2) >: T
+end
