@@ -1725,6 +1725,43 @@ function indexin(a::AbstractArray, b::AbstractArray)
     [get(bdict, i, 0) for i in a]
 end
 
+function _findin(a, b)
+    ind  = Int[]
+    bset = Set(b)
+    @inbounds for (i,ai) in enumerate(a)
+        ai in bset && push!(ind, i)
+    end
+    ind
+end
+
+function _sortedfindin(v, w)
+    out   = Int[]
+    i, j  = start(v), start(w)
+    if done(v, i) || done(w, j)
+        return out
+    end
+    iold  = i
+    vi, i = next(v, i)
+    wj, j = next(w, j)
+    @inbounds while !(done(v, i) || done(w, j))
+        if     vi < wj
+            iold  = i
+            vi, i = next(v, i)
+        elseif vi > wj
+            wj, j = next(w, j)
+        else
+            push!(out, iold)
+            iold  = i
+            vi, i = next(v, i)
+            wj, j = next(w, j)
+        end
+    end
+    if vi == wj
+        push!(out, iold)
+    end
+    return out
+end
+
 """
     findin(a, b)
 
@@ -1751,12 +1788,11 @@ julia> findin(a,b) # 10 is the only common element
 ```
 """
 function findin(a, b)
-    ind = Array{Int,1}(0)
-    bset = Set(b)
-    @inbounds for (i,ai) in enumerate(a)
-        ai in bset && push!(ind, i)
+    if issorted(a) && issorted(b)
+        return _sortedfindin(a, b)
+    else
+        return _findin(a, b)
     end
-    ind
 end
 
 # Copying subregions
